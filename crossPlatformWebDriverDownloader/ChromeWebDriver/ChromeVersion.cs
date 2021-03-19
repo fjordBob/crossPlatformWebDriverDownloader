@@ -12,7 +12,7 @@
             if (!string.IsNullOrEmpty(version))
             {
                 string[] versionIdentifiers = version.Split(".");
-
+                
                 //ToDo: Error Handling
 
                 Major = int.Parse(versionIdentifiers[0]);

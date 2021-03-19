@@ -1,4 +1,5 @@
-﻿using System;
+﻿using crossPlatformWebDriverDownloader.ChromeWebDriver;
+using System;
 
 namespace crossPlatformWebDriverDownloader
 {
@@ -6,7 +7,7 @@ namespace crossPlatformWebDriverDownloader
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            ChromeWebDriverInstaller.DownloadChromeDriver();
         }
     }
 }

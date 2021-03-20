@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace crossPlatformWebDriverDownloader.ChromeWebDriver
 {
@@ -49,7 +52,7 @@ namespace crossPlatformWebDriverDownloader.ChromeWebDriver
             ChromeVersion retVal = null;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
+            {                
                 string chromePathProgramFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) +
                                             "\\Google\\Chrome\\Application\\chrome.exe";
                 string chromePathProgramFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) +
@@ -57,9 +60,38 @@ namespace crossPlatformWebDriverDownloader.ChromeWebDriver
                 
                 string chromePath = File.Exists(chromePathProgramFiles) ? chromePathProgramFiles : chromePathProgramFilesX86;
                 if (File.Exists(chromePath))
-                {
+                {                    
                     retVal = new ChromeVersion(FileVersionInfo.GetVersionInfo(chromePath).FileVersion);
                 }
+                // Tested on mac with intel silicon and macos Big Sur 11.2.3
+            }else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                string appsPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                string chromePlistPath = Path.GetFullPath(Path.Combine(appsPath, "Google Chrome.app", "Contents", "Info.plist"));
+
+                XDocument chromePlist = XDocument.Load(chromePlistPath);
+                var elements = chromePlist.Elements("plist").DescendantNodesAndSelf().ToList();
+                bool versionKeyFound = false;
+                string version = string.Empty;
+
+                foreach (var element in elements)
+                {
+                    if (element.ToString() == "KSVersion")
+                    {
+                        versionKeyFound = true;
+                        continue;
+                    }
+
+                    if (versionKeyFound)
+                    {
+                        version = element.ToString();
+                        version = version.Replace("<string>", "");
+                        version = version.Replace("</string>", "");
+                        break;
+                    }
+                }
+
+                retVal = new ChromeVersion(version);
             }
 
             return retVal;
@@ -74,6 +106,11 @@ namespace crossPlatformWebDriverDownloader.ChromeWebDriver
             {
                 chromeDriverPath = Path.Combine(Environment.CurrentDirectory, ".\\chromedriver.exe");
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                chromeDriverPath = Path.Combine(Environment.CurrentDirectory, "chromedriver");
+            }
+
 
             if (File.Exists(chromeDriverPath))
             {

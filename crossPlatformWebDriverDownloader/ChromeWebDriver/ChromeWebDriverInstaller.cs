@@ -22,6 +22,13 @@ namespace crossPlatformWebDriverDownloader.ChromeWebDriver
                 chromeDriverUrl = "https://chromedriver.storage.googleapis.com/" + chromeDriverVersion + "/chromedriver_win32.zip";
                 chromeDriverZipFilePath = Path.Combine(Environment.GetEnvironmentVariable("TEMP"), "chromedriver_win32.zip");
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                string tempPath = Path.GetTempPath();
+
+                chromeDriverUrl = "https://chromedriver.storage.googleapis.com/" + chromeDriverVersion + "/chromedriver_mac64.zip";
+                chromeDriverZipFilePath = Path.GetFullPath(Path.Combine(tempPath, "chromedriver_mac64.zip"));
+            }
 
             Console.WriteLine("Downloading chromedriver version {0} from {1} to local folder {2}", chromeDriverVersion, chromeDriverUrl, chromeDriverZipFilePath);
 
@@ -45,6 +52,7 @@ namespace crossPlatformWebDriverDownloader.ChromeWebDriver
             Console.WriteLine("Extracting {0} to {1}", chromeDriverZipFilePath, Environment.CurrentDirectory);
 
             ZipFile.ExtractToDirectory(chromeDriverZipFilePath, ".", true);
+            File.Delete(chromeDriverZipFilePath);
         }
 
         public static void DownloadChromeDriver()
